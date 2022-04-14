@@ -1,0 +1,9 @@
+*{
+    background-color: gray;
+}
+
+li{
+    margin: 6px;
+    background-color: purple;
+    width: 150px;
+}
