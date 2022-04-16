@@ -5,13 +5,17 @@ const formEl = $("#initials");
 const startEl = $("#start");
 const scoreboardEl = $("#scoreboard");
 const boardEl = $("#board");
+const timerEl = $("#time");
 let score = 0;
 let chosen;
 let used = [];
+let highScores = [];
+let secondsLeft = 60;
 
 //hiding everthing but start screen
 formEl.hide();
 gameEl.hide();
+timerEl.hide();
 
 let questions = [
     {
@@ -66,12 +70,35 @@ function genQuestion(){
 
 }
 
-//starts game by hiding start screen, showing game screen and generating frist question
+//basic timer that ends game when reaches 0
+function setTime() {
+    var timerInterval = setInterval(function() {
+      secondsLeft--;
+      timerEl.text("Time: " + secondsLeft);
+  
+      if(secondsLeft === 0) {
+        clearInterval(timerInterval);
+        endGame();
+      }
+  
+    }, 1000);
+  }
+
+//starts game by hiding start screen, showing game screen and timer. generates frist question as well.
 function startGame(){
     startEl.hide();
     gameEl.show();
+    timerEl.text("Time: " + secondsLeft);
 
     genQuestion();
+    setTime();
+    timerEl.show();
+}
+
+function endGame(){
+    gameEl.hide();
+    formEl.show();
+    timerEl.hide();
 }
 
 startEl.on("click", startGame)
@@ -96,18 +123,19 @@ answerEl.on("click", "li", function(event){
         answerEl.children().remove();
         genQuestion();
     }else{
-        gameEl.hide();
-        formEl.show();
+        endGame();
+        //adds remaining time to score if all questions are answered before time runs out.
+        score += secondsLeft;
     }
 })
 
+//stores high score on form submit
 formEl.on("submit", function(event){
     event.preventDefault();
 
     const name = $("#name").val();
     console.log(name + " " + score);
-    scoreboardEl.append("<li>" + name + " " + score + "</li>");
-    localStorage.setItem("score", scoreboardEl);
+    
     
 })
 
