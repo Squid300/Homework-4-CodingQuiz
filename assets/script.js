@@ -6,16 +6,21 @@ const startEl = $("#start");
 const scoreboardEl = $("#scoreboard");
 const boardEl = $("#board");
 const timerEl = $("#time");
+const startButt = $("#startBut");
+const restartButt = $("#restart");
+const deleteButt = $("#delete")
 let score = 0;
 let chosen;
 let used = [];
 let highScores = [];
 let secondsLeft = 60;
+let scoreSave = [];
 
 //hiding everthing but start screen
 formEl.hide();
 gameEl.hide();
 timerEl.hide();
+scoreboardEl.hide();
 
 let questions = [
     {
@@ -76,7 +81,7 @@ function setTime() {
       secondsLeft--;
       timerEl.text("Time: " + secondsLeft);
   
-      if(secondsLeft === 0) {
+      if(secondsLeft <= 0) {
         clearInterval(timerInterval);
         endGame();
       }
@@ -101,7 +106,26 @@ function endGame(){
     timerEl.hide();
 }
 
-startEl.on("click", startGame)
+function scoreUpdate(){
+    for(i = 0; i < scoreSave.length; i ++){
+        boardEl.append("<li>Name: " + scoreSave[i].name + " Score: " + scoreSave[i].stat);
+    }
+    scoreboardEl.show();
+    formEl.hide();
+}
+
+startButt.on("click", startGame)
+deleteButt.on("click", function(){
+    localStorage.clear();
+    scoreSave = [];
+    boardEl.children().remove();
+})
+restartButt.on("click", function(){
+    scoreboardEl.hide();
+    startGame();
+    used = [];
+    secondsLeft = 60;
+})
 
 answerEl.on("click", "li", function(event){
     //getting text value from clicked list item
@@ -116,6 +140,7 @@ answerEl.on("click", "li", function(event){
 
     }else{
         console.log("you lose");
+        secondsLeft -= 10;
     }
 
     //checks if all questions have been chosen to either ask another or end game
@@ -125,7 +150,7 @@ answerEl.on("click", "li", function(event){
     }else{
         endGame();
         //adds remaining time to score if all questions are answered before time runs out.
-        score += secondsLeft;
+        score += secondsLeft/2;
     }
 })
 
@@ -133,10 +158,21 @@ answerEl.on("click", "li", function(event){
 formEl.on("submit", function(event){
     event.preventDefault();
 
-    const name = $("#name").val();
-    console.log(name + " " + score);
+    if(localStorage.getItem("highScores") !== null){
+        scoreSave = JSON.parse(localStorage["highScores"]);
+    }
     
-    
+    //puts name and score together as an object in an array to be parsed and stored locally
+    scoreSave.push({
+        name: $("#name").val(),
+        stat: score
+    });
+
+    console.log(scoreSave);
+    localStorage.setItem("highScores", JSON.stringify(scoreSave));
+    scoreboardEl.show();
+
+    scoreUpdate();
 })
 
 
